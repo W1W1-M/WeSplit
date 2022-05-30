@@ -9,9 +9,15 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var checkAmount: Double = 0
-    @State private var totalSplits: Int = 0
+    @State private var totalSplits: Int = 2
     @State private var tipPart: Int = 0
-    @State private var shareAmount: Double = 0
+    private var shareAmount: Double {
+        let splits = Double(totalSplits)
+        let tip = checkAmount/100*Double(tipPart)
+        let total = checkAmount+tip
+        let share = total/splits
+        return share
+    }
     let tip: Array<Int> = [0, 10, 15, 20, 30]
     var body: some View {
         NavigationView {
@@ -34,7 +40,7 @@ struct ContentView: View {
                         }
                     }.pickerStyle(.segmented)
                 } header: {
-                    Text("Select tip")
+                    Text("Leave a tip ?")
                 }
                 Section {
                     Text(shareAmount, format: .currency(code: Locale.current.currencyCode ?? "EUR"))
