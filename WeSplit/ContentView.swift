@@ -8,48 +8,97 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var checkAmount: Double = 0
+    @State private var checkAmount: Double? = nil
     @State private var totalSplits: Int = 2
     @State private var tipPart: Int = 0
     @FocusState private var checkAmountFocused: Bool
+    private var tipAmount: Double {
+        let tipPart = Double(tipPart)/100
+        return (checkAmount ?? 0)*tipPart
+    }
+    private var totalAmount: Double {
+        return (checkAmount ?? 0)+tipAmount
+    }
     private var shareAmount: Double {
         let splits = Double(totalSplits)
-        let tip = checkAmount/100*Double(tipPart)
-        let total = checkAmount+tip
-        let share = total/splits
+        let share = totalAmount/splits
         return share
     }
-    let tip: Array<Int> = [0, 10, 15, 20, 30]
+    let currency: FloatingPointFormatStyle<Double>.Currency = .currency(code: Locale.current.currencyCode ?? "EUR")
+    let tip: Array<Int> = [0, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     var body: some View {
         NavigationView {
-            Form {
-                Section {
-                    TextField("Amount", value: $checkAmount, format: .currency(code: Locale.current.currencyCode ?? "EUR"))
-                        .keyboardType(.decimalPad)
-                        .focused($checkAmountFocused)
-                    Picker("People", selection: $totalSplits) {
-                        ForEach(2..<13) {
-                            Text("\($0) people").tag($0)
+            ZStack {
+                Color.cyan.ignoresSafeArea()
+                Form {
+                    Section {
+                        HStack {
+                            TextField("Amount", value: $checkAmount, format: currency, prompt: Text("Check Amount"))
+                                .keyboardType(.decimalPad)
+                                .focused($checkAmountFocused)
                         }
-                    }.pickerStyle(.menu)
-                } header: {
-                    Text("Check to split")
-                }
-                Section {
-                    Picker("tip", selection: $tipPart) {
-                        ForEach(tip, id: \.self) {
-                            Text($0, format: .percent).tag($0)
+                    } header: {
+                        HStack {
+                            Spacer()
+                            Text("🖋 Check").foregroundColor(.white)
+                            Spacer()
                         }
-                    }.pickerStyle(.segmented)
-                } header: {
-                    Text("Leave a tip ?")
-                }
-                Section {
-                    Text(shareAmount, format: .currency(code: Locale.current.currencyCode ?? "EUR"))
-                } header: {
-                    Text("Share per person")
-                }
-            }.navigationTitle("WeSplit")
+                    }
+                    Section {
+                        HStack {
+                            Text("Tipping").foregroundColor(.secondary)
+                            Spacer()
+                            Text(tipAmount, format: currency)
+                            Spacer()
+                            Picker("tip", selection: $tipPart) {
+                                ForEach(tip, id: \.self) {
+                                    Text($0, format: .percent).tag($0)
+                                }
+                            }.pickerStyle(.menu)
+                        }
+                    } header: {
+                        HStack {
+                            Spacer()
+                            Text("🪙 Tip").foregroundColor(.white)
+                            Spacer()
+                        }
+                    }
+                    Section {
+                        HStack {
+                            Text("Check + Tip").foregroundColor(.secondary)
+                            Spacer()
+                            Text(totalAmount, format: currency)
+                        }
+                    } header: {
+                        HStack {
+                            Spacer()
+                            Text("🧾 Total").foregroundColor(.white)
+                            Spacer()
+                        }
+                    }
+                    Section {
+                        HStack {
+                            Text("Split by").foregroundColor(.secondary)
+                            Spacer()
+                            Picker("People", selection: $totalSplits) {
+                                ForEach(2..<13) {
+                                    Text("\($0) people").tag($0)
+                                }
+                            }.pickerStyle(.menu)
+                        }
+                        HStack {
+                            Text("Pay \(totalSplits)x").foregroundColor(.secondary)
+                            Spacer()
+                            Text(shareAmount, format: currency).bold()
+                        }
+                    } header: {
+                        HStack {
+                            Spacer()
+                            Text("🤝 Share").foregroundColor(.white)
+                            Spacer()
+                        }
+                    }
+                }.navigationTitle("WeSplit")
                 .toolbar {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
@@ -58,6 +107,10 @@ struct ContentView: View {
                         }
                     }
                 }
+                .onAppear(perform: {
+                    UITableView.appearance().backgroundColor = .clear
+                })
+            }
         }
     }
 }
