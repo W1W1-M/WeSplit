@@ -67,7 +67,7 @@ struct ContentView: View {
                         HStack {
                             Text("Check + Tip").foregroundColor(.secondary)
                             Spacer()
-                            Text(totalAmount, format: currency)
+                            Text(totalAmount, format: currency).foregroundColor(tipPart == 0 ? .red : .green)
                         }
                     } header: {
                         HStack {
